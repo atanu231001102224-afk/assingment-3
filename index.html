@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f4ec">
+  <title>Fieldnote | Employee directory</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f5f4ec;
+      --surface: #fffefa;
+      --ink: #202d25;
+      --muted: #72786e;
+      --line: #e3e4d9;
+      --green: #315c43;
+      --green-dark: #244934;
+      --green-wash: #e8eee4;
+      --coral: #c7664b;
+      --coral-wash: #f7ebe5;
+      --shadow: 0 16px 42px rgb(37 51 40 / 7%);
+      font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      min-width: 320px;
+      margin: 0;
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image: radial-gradient(#b9bba9 0.65px, transparent 0.65px);
+      background-size: 15px 15px;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .shell { width: min(1120px, calc(100% - 48px)); margin: 0 auto; padding: 32px 0 60px; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding-bottom: 26px; border-bottom: 1px solid rgb(49 92 67 / 16%); }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 750; letter-spacing: 0; }
+    .brand-mark { display: grid; width: 35px; height: 35px; place-items: center; color: #fff; background: var(--green); border-radius: 11px 11px 11px 3px; }
+    .brand-mark svg { width: 20px; height: 20px; }
+    .top-note { color: var(--muted); font-size: 13px; }
+    .intro { display: flex; align-items: end; justify-content: space-between; gap: 24px; padding: 38px 0 27px; }
+    .eyebrow { margin: 0 0 9px; color: var(--coral); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.4px; }
+    h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(34px, 5vw, 48px); font-weight: 500; line-height: 1.05; letter-spacing: 0; }
+    .intro-copy { max-width: 480px; margin: 12px 0 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+
+    .button { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; gap: 9px; padding: 0 16px; border: 1px solid transparent; border-radius: 6px; font-size: 13px; font-weight: 700; transition: background-color 140ms ease, transform 140ms ease; }
+    .button:hover { transform: translateY(-1px); }
+    .button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid rgb(199 102 75 / 32%); outline-offset: 2px; }
+    .button-primary { color: white; background: var(--green); }
+    .button-primary:hover { background: var(--green-dark); }
+    .button-secondary { color: var(--ink); background: var(--surface); border-color: var(--line); }
+    .button-danger { color: #99432f; background: transparent; }
+    .button-danger:hover { background: var(--coral-wash); }
+    .button svg { width: 16px; height: 16px; }
+
+    .summary { display: flex; align-items: center; gap: 17px; min-height: 76px; margin-bottom: 18px; padding: 15px 20px; background: var(--green); border-radius: 7px; color: white; }
+    .summary-icon { display: grid; width: 42px; height: 42px; flex: none; place-items: center; color: var(--green); background: #eff2e9; border-radius: 50%; }
+    .summary-icon svg { width: 21px; height: 21px; }
+    .summary-label { margin: 0 0 2px; color: #d2ddcf; font-size: 12px; }
+    .summary-value { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 25px; line-height: 1.1; }
+    .summary-count { margin-left: auto; color: #d2ddcf; font-size: 12px; }
+
+    .directory { overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 7px; box-shadow: var(--shadow); }
+    .toolbar { display: flex; align-items: center; gap: 12px; padding: 17px 18px; border-bottom: 1px solid var(--line); }
+    .search-wrap { position: relative; flex: 1; }
+    .search-wrap svg { position: absolute; top: 50%; left: 13px; width: 17px; height: 17px; color: #888e82; transform: translateY(-50%); pointer-events: none; }
+    .search-wrap input { width: 100%; height: 42px; padding: 0 14px 0 40px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: #fff; font-size: 13px; }
+    .search-wrap input::placeholder { color: #92968d; }
+    .filter-wrap select { width: 190px; height: 42px; padding: 0 32px 0 12px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: #fff; font-size: 13px; }
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    thead { background: #f7f7f1; }
+    th { padding: 12px 15px; color: #777e72; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; }
+    td { padding: 14px 15px; border-top: 1px solid #eeeee7; font-size: 13px; vertical-align: middle; }
+    tbody tr { animation: arrive 260ms ease both; }
+    tbody tr:hover { background: #fbfbf6; }
+    .person { display: flex; min-width: 190px; align-items: center; gap: 11px; }
+    .avatar { display: grid; width: 34px; height: 34px; flex: none; place-items: center; border-radius: 50%; color: var(--green); background: var(--green-wash); font-size: 11px; font-weight: 800; }
+    .person-name { margin: 0 0 3px; font-weight: 700; white-space: nowrap; }
+    .person-id { margin: 0; color: #858a80; font-size: 11px; }
+    .department { display: inline-block; padding: 5px 8px; border-radius: 4px; color: var(--green-dark); background: var(--green-wash); font-size: 11px; font-weight: 650; white-space: nowrap; }
+    .gender, .phone { color: #565e54; white-space: nowrap; }
+    .actions { display: flex; justify-content: flex-end; gap: 3px; white-space: nowrap; }
+    .actions .button { min-height: 32px; padding: 0 9px; font-size: 12px; }
+    .empty { display: none; padding: 58px 20px; text-align: center; }
+    .empty-mark { display: grid; width: 48px; height: 48px; margin: 0 auto 14px; place-items: center; color: var(--coral); background: var(--coral-wash); border-radius: 50%; }
+    .empty-mark svg { width: 23px; height: 23px; }
+    .empty h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 21px; font-weight: 500; }
+    .empty p { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
+    .directory-footer { display: flex; justify-content: space-between; gap: 16px; padding: 13px 18px; border-top: 1px solid var(--line); color: #81867c; font-size: 11px; }
+
+    dialog { width: min(620px, calc(100% - 28px)); max-height: min(90vh, 760px); padding: 0; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: var(--surface); box-shadow: 0 25px 90px rgb(20 32 24 / 28%); }
+    dialog::backdrop { background: rgb(26 39 29 / 42%); backdrop-filter: blur(2px); }
+    .form-header { display: flex; align-items: start; justify-content: space-between; padding: 21px 24px 17px; border-bottom: 1px solid var(--line); }
+    .form-header h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 24px; font-weight: 500; }
+    .form-header p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .close-button { display: grid; width: 32px; height: 32px; place-items: center; border: 0; border-radius: 5px; color: var(--muted); background: transparent; font-size: 22px; line-height: 1; }
+    .close-button:hover { background: #f0f0e8; }
+    .employee-form { padding: 19px 24px 22px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px 14px; }
+    .field { display: grid; gap: 6px; }
+    .field-wide { grid-column: 1 / -1; }
+    .field label { color: #596156; font-size: 11px; font-weight: 750; }
+    .field input, .field select, .field textarea { width: 100%; min-height: 40px; padding: 9px 11px; border: 1px solid #dfe1d7; border-radius: 4px; color: var(--ink); background: #fff; font-size: 13px; }
+    .field textarea { min-height: 70px; resize: vertical; }
+    .form-error { min-height: 17px; margin: 9px 0 0; color: #a14834; font-size: 12px; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 12px; }
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 2; padding: 12px 16px; border-radius: 5px; color: white; background: var(--green-dark); box-shadow: var(--shadow); font-size: 13px; animation: arrive 180ms ease both; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    @keyframes arrive { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 700px) {
+      .shell { width: min(100% - 28px, 580px); padding-top: 18px; }
+      .topbar { padding-bottom: 18px; }
+      .top-note { max-width: 130px; text-align: right; font-size: 11px; }
+      .intro { align-items: start; padding: 29px 0 21px; }
+      .intro-copy { max-width: 340px; font-size: 13px; }
+      .intro .button { min-width: 43px; padding: 0 12px; font-size: 0; }
+      .intro .button svg { width: 19px; height: 19px; }
+      .summary { min-height: 68px; padding: 12px 14px; }
+      .summary-count { max-width: 100px; text-align: right; line-height: 1.4; }
+      .toolbar { align-items: stretch; flex-direction: column; padding: 13px; }
+      .filter-wrap select { width: 100%; }
+      .table-scroll { overflow: visible; }
+      table, tbody { display: block; width: 100%; }
+      thead { display: none; }
+      tbody { padding: 0 13px; }
+      tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 8px; padding: 14px 0; border-top: 1px solid #eeeee7; }
+      tbody tr:first-child { border-top: 0; }
+      td { display: block; padding: 0; border: 0; }
+      td:nth-child(1) { grid-column: 1; grid-row: 1; }
+      td:nth-child(2) { grid-column: 1; grid-row: 2; padding-left: 45px; }
+      td:nth-child(3) { grid-column: 2; grid-row: 1; justify-self: end; }
+      td:nth-child(4) { grid-column: 1; grid-row: 3; padding-left: 45px; }
+      td:nth-child(5) { grid-column: 1; grid-row: 4; padding-left: 45px; }
+      td:nth-child(6) { grid-column: 1; grid-row: 5; padding-left: 45px; }
+      td:nth-child(7) { grid-column: 2; grid-row: 5; align-self: center; }
+      .person { min-width: 0; }
+      .actions .button { min-height: 30px; }
+      .directory-footer { padding: 12px 14px; }
+    }
+    @media (max-width: 430px) {
+      .form-header { padding: 18px 17px 14px; }
+      .employee-form { padding: 16px 17px 18px; }
+      .form-grid { grid-template-columns: 1fr; gap: 12px; }
+      .field-wide { grid-column: auto; }
+      .toast { right: 14px; bottom: 14px; left: 14px; text-align: center; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 4.5C12 4.5 6 7.5 6 13a5 5 0 0 0 5 5c5.5 0 8.5-6 8.5-13.5Z"/><path d="M4 21c2.5-5 6-8.5 11-11"/></svg>
+        </span>
+        <span>Fieldnote</span>
+      </div>
+      <div class="top-note">People &amp; operations<br>Riverside Farm</div>
+    </header>
+
+    <section class="intro" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">Field operations / People</p>
+        <h1 id="page-title">Employee directory</h1>
+        <p class="intro-copy">A clear view of the people who keep the farm growing. Manage team details in one place.</p>
+      </div>
+      <button class="button button-primary" id="add-employee" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Add employee
+      </button>
+    </section>
+
+    <section class="summary" aria-label="Employee count">
+      <span class="summary-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </span>
+      <div><p class="summary-label">Total employees</p><p class="summary-value" id="total-count">0</p></div>
+      <p class="summary-count" id="visible-count" aria-live="polite">Showing 0 employees</p>
+    </section>
+
+    <section class="directory" aria-label="Employee records">
+      <div class="toolbar">
+        <label class="search-wrap">
+          <span class="sr-only">Search employees</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+          <input id="search" type="search" placeholder="Search name, ID or phone..." autocomplete="off">
+        </label>
+        <label class="filter-wrap">
+          <span class="sr-only">Filter by department</span>
+          <select id="department-filter"><option value="">All departments</option></select>
+        </label>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th scope="col">Employee</th><th scope="col">Department</th><th scope="col">Gender</th><th scope="col">Phone</th><th scope="col">Local address</th><th scope="col">Permanent address</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+          <tbody id="employee-rows"></tbody>
+        </table>
+        <div class="empty" id="empty-state">
+          <span class="empty-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4M8 10h5"/></svg></span>
+          <h2 id="empty-title">No employees yet</h2>
+          <p id="empty-copy">Add your first team member to get the directory started.</p>
+        </div>
+      </div>
+      <footer class="directory-footer"><span>Employee records</span><span>Riverside Farm</span></footer>
+    </section>
+  </main>
+
+  <dialog id="employee-dialog" aria-labelledby="form-title">
+    <div class="form-header">
+      <div><h2 id="form-title">Add employee</h2><p>Enter the employee's details below.</p></div>
+      <button class="close-button" id="close-dialog" type="button" aria-label="Close form">&times;</button>
+    </div>
+    <form class="employee-form" id="employee-form">
+      <div class="form-grid">
+        <div class="field"><label for="name">Full name *</label><input id="name" name="name" required maxlength="80" autocomplete="name"></div>
+        <div class="field"><label for="employeeId">Employee ID *</label><input id="employeeId" name="employeeId" required maxlength="24"></div>
+        <div class="field"><label for="department">Department *</label><input id="department" name="department" required maxlength="50" list="departments" autocomplete="organization-title"><datalist id="departments"><option value="Field Operations"><option value="Livestock"><option value="Equipment"><option value="Administration"><option value="Harvest"></datalist></div>
+        <div class="field"><label for="gender">Gender *</label><select id="gender" name="gender" required><option value="">Select gender</option><option>Female</option><option>Male</option><option>Non-binary</option><option>Prefer not to say</option></select></div>
+        <div class="field"><label for="phone">Phone number *</label><input id="phone" name="phone" type="tel" required maxlength="30" autocomplete="tel"></div>
+        <div class="field"><label for="localAddress">Local address *</label><input id="localAddress" name="localAddress" required maxlength="120" autocomplete="street-address"></div>
+        <div class="field field-wide"><label for="permanentAddress">Permanent address *</label><textarea id="permanentAddress" name="permanentAddress" required maxlength="240" autocomplete="street-address"></textarea></div>
+      </div>
+      <p class="form-error" id="form-error" role="alert"></p>
+      <div class="form-actions">
+        <button class="button button-secondary" id="cancel-form" type="button">Cancel</button>
+        <button class="button button-primary" type="submit" id="save-employee">Save employee</button>
+      </div>
+    </form>
+  </dialog>
+  <div id="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+    const STORAGE_KEY = "fieldnote-employees-v1";
+    const starterEmployees = [
+      { name: "Maya Bennett", employeeId: "RF-024", department: "Field Operations", gender: "Female", phone: "(555) 014-8821", localAddress: "18 Orchard Lane", permanentAddress: "18 Orchard Lane, Millbrook, CA 95037" },
+      { name: "Eli Navarro", employeeId: "RF-031", department: "Livestock", gender: "Male", phone: "(555) 014-3906", localAddress: "62 Farm Road", permanentAddress: "902 Cedar Street, Salinas, CA 93901" },
+      { name: "Jordan Kim", employeeId: "RF-038", department: "Equipment", gender: "Non-binary", phone: "(555) 014-7190", localAddress: "5 Creekside Cottage", permanentAddress: "5 Creekside Cottage, Millbrook, CA 95037" },
+      { name: "Rosa Delgado", employeeId: "RF-042", department: "Harvest", gender: "Female", phone: "(555) 014-2257", localAddress: "Farmhouse B", permanentAddress: "117 Oak Avenue, Gilroy, CA 95020" },
+      { name: "Noah Patel", employeeId: "RF-047", department: "Administration", gender: "Male", phone: "(555) 014-5644", localAddress: "21 Meadow Court", permanentAddress: "21 Meadow Court, Millbrook, CA 95037" }
+    ];
+
+    const rows = document.querySelector("#employee-rows");
+    const dialog = document.querySelector("#employee-dialog");
+    const form = document.querySelector("#employee-form");
+    const searchInput = document.querySelector("#search");
+    const departmentFilter = document.querySelector("#department-filter");
+    const fields = ["name", "employeeId", "department", "gender", "phone", "localAddress", "permanentAddress"];
+    let employees = loadEmployees();
+    let editingId = null;
+    let toastTimer;
+
+    function loadEmployees() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved === null) return [...starterEmployees];
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed.filter((employee) => employee && fields.every((field) => typeof employee[field] === "string")) : [...starterEmployees];
+      } catch {
+        return [...starterEmployees];
+      }
+    }
+
+    function saveEmployees() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(employees));
+      } catch {
+        showToast("Could not save changes in this browser.");
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+    }
+
+    function initials(name) {
+      return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0] || "").join("").toUpperCase();
+    }
+
+    function getVisibleEmployees() {
+      const query = searchInput.value.trim().toLocaleLowerCase();
+      const department = departmentFilter.value;
+      return employees.filter((employee) => {
+        const matchesQuery = !query || [employee.name, employee.employeeId, employee.phone].some((value) => value.toLocaleLowerCase().includes(query));
+        return matchesQuery && (!department || employee.department === department);
+      });
+    }
+
+    function render() {
+      const selectedDepartment = departmentFilter.value;
+      const departments = [...new Set(employees.map((employee) => employee.department))].sort((a, b) => a.localeCompare(b));
+      departmentFilter.innerHTML = '<option value="">All departments</option>' + departments.map((department) => `<option value="${escapeHtml(department)}">${escapeHtml(department)}</option>`).join("");
+      departmentFilter.value = departments.includes(selectedDepartment) ? selectedDepartment : "";
+
+      const visibleEmployees = getVisibleEmployees();
+      rows.innerHTML = visibleEmployees.map((employee) => `
+        <tr>
+          <td><div class="person"><span class="avatar" aria-hidden="true">${escapeHtml(initials(employee.name))}</span><div><p class="person-name">${escapeHtml(employee.name)}</p><p class="person-id">${escapeHtml(employee.employeeId)}</p></div></div></td>
+          <td><span class="department">${escapeHtml(employee.department)}</span></td>
+          <td class="gender">${escapeHtml(employee.gender)}</td>
+          <td class="phone">${escapeHtml(employee.phone)}</td>
+          <td>${escapeHtml(employee.localAddress)}</td>
+          <td>${escapeHtml(employee.permanentAddress)}</td>
+          <td><div class="actions"><button class="button button-secondary" type="button" data-action="edit" data-id="${escapeHtml(employee.employeeId)}">Edit</button><button class="button button-danger" type="button" data-action="delete" data-id="${escapeHtml(employee.employeeId)}">Delete</button></div></td>
+        </tr>`).join("");
+
+      document.querySelector("#total-count").textContent = employees.length;
+      document.querySelector("#visible-count").textContent = `Showing ${visibleEmployees.length} of ${employees.length} ${employees.length === 1 ? "employee" : "employees"}`;
+      const empty = visibleEmployees.length === 0;
+      document.querySelector(".table-scroll table").hidden = empty;
+      document.querySelector("#empty-state").style.display = empty ? "block" : "none";
+      document.querySelector("#empty-title").textContent = employees.length === 0 ? "No employees yet" : "No matching employees";
+      document.querySelector("#empty-copy").textContent = employees.length === 0 ? "Add your first team member to get the directory started." : "Try another name, ID, phone number or department.";
+
+    }
+
+    function showToast(message) {
+      const region = document.querySelector("#toast-region");
+      region.innerHTML = `<div class="toast" role="status">${escapeHtml(message)}</div>`;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { region.replaceChildren(); }, 2600);
+    }
+
+    function openForm(employee = null) {
+      editingId = employee ? employee.employeeId : null;
+      form.reset();
+      document.querySelector("#form-error").textContent = "";
+      document.querySelector("#form-title").textContent = employee ? "Edit employee" : "Add employee";
+      document.querySelector("#save-employee").textContent = employee ? "Save changes" : "Save employee";
+      if (employee) fields.forEach((field) => { form.elements[field].value = employee[field]; });
+      dialog.showModal();
+      form.elements.name.focus();
+    }
+
+    function closeForm() {
+      dialog.close();
+      editingId = null;
+    }
+
+    document.querySelector("#add-employee").addEventListener("click", () => openForm());
+    document.querySelector("#close-dialog").addEventListener("click", closeForm);
+    document.querySelector("#cancel-form").addEventListener("click", closeForm);
+    searchInput.addEventListener("input", render);
+    departmentFilter.addEventListener("change", render);
+
+    rows.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+      const employee = employees.find((record) => record.employeeId === button.dataset.id);
+      if (!employee) return;
+      if (button.dataset.action === "edit") {
+        openForm(employee);
+      } else if (button.dataset.action === "delete" && window.confirm(`Delete ${employee.name} (${employee.employeeId})?`)) {
+        employees = employees.filter((record) => record.employeeId !== employee.employeeId);
+        saveEmployees();
+        render();
+        showToast(`${employee.name} removed from the directory.`);
+      }
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const employee = Object.fromEntries(fields.map((field) => [field, form.elements[field].value.trim()]));
+      const duplicate = employees.some((record) => record.employeeId.toLocaleLowerCase() === employee.employeeId.toLocaleLowerCase() && record.employeeId !== editingId);
+      if (duplicate) {
+        document.querySelector("#form-error").textContent = "That employee ID is already in use. Choose a unique ID.";
+        form.elements.employeeId.focus();
+        return;
+      }
+
+      const wasEditing = Boolean(editingId);
+      if (wasEditing) {
+        employees = employees.map((record) => record.employeeId === editingId ? employee : record);
+      } else {
+        employees = [...employees, employee];
+      }
+      saveEmployees();
+      closeForm();
+      render();
+      showToast(wasEditing ? "Employee details updated." : "Employee added to the directory.");
+    });
+
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) closeForm();
+    });
+
+    render();
+  </script>
+</body>
+</html>
